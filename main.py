@@ -1,38 +1,7 @@
 import time
+import random
 
-def get_high_score():
-    try: 
-        with open("high_score.txt", "r") as file:
-            return int(file.read())
-    except FileNotFoundError:
-            return 0 #if no file found, return 0
-    
-def save_high_score(score):
-    with open("high_score.txt", "w") as file:
-        file.write(str(score))
-
-def run_quiz():
-    start_time = time.time()
-
-    def choose_difficulty():
-        print("Choose a difficulty level:")
-        print("1. Easy")
-        print("2. Medium")
-        print("3. Hard")
-
-        choice = input("Enter the number of your choice: ").strip()
-        while choice not in ["1", "2", "3"]:
-            print("invalid choice. Please choose 1, 2, or 3.")
-            choice = input("Enter the number of your choice:").strip()
-        
-        if choice == "1":
-            return easy_questions
-        elif choice == "2":
-            return medium_questions
-        elif choice == "3":
-            return hard_questions
-    
-    easy_questions = [
+easy_questions = [
         {
             "question": "What is the capital of Indonesia?",
             "options": ["A. Jakarta", "B. Makassar", "C. Bandung", "D. Surabaya"],
@@ -63,7 +32,7 @@ def run_quiz():
             "answer": "B",
             "levels": "easy"
         }]
-    medium_questions = [
+medium_questions = [
         {
             "question": "What is the chemical symbol for water?",
             "options": ["A. O2", "B. H2O", "C. CO2", "D. NaCl"],
@@ -94,7 +63,7 @@ def run_quiz():
             "answer": "D",
             "levels": "medium"
         }]
-    hard_questions = [ 
+hard_questions = [ 
         {
             "question": "What is the capital of France?",
             "options": ["A. Paris", "B. London", "C. Berlin", "D. Madrid"],
@@ -126,10 +95,44 @@ def run_quiz():
             "levels": "hard"
         }]
 
-    questions = choose_difficulty()
+def get_high_score(difficulty):
+    try: 
+        with open(f"high_score_{difficulty}.txt", "r") as file:
+            return int(file.read())
+    except FileNotFoundError:
+            return 0 #if no file found, return 0
+
+def save_high_score(score, difficulty):
+    with open(f"high_score_{difficulty}.txt", "w") as file:
+        file.write(str(score))
+
+def run_quiz():
+    start_time = time.time()
+
+    def choose_difficulty():
+        print("Choose a difficulty level:")
+        print("1. Easy")
+        print("2. Medium")
+        print("3. Hard")
+
+        choice = input("Enter the number of your choice: ").strip()
+        while choice not in ["1", "2", "3"]:
+            print("invalid choice. Please choose 1, 2, or 3.")
+            choice = input("Enter the number of your choice:").strip()
+        
+        if choice == "1":
+            return "easy", easy_questions
+        elif choice == "2":
+            return "medium", medium_questions
+        elif choice == "3":
+            return "hard", hard_questions
+
+    difficulty, questions = choose_difficulty()
+
+    # Shuffle Questions
+    questions = random.sample(questions, len(questions))
     
     score = 0
-
     print("🧠 Welcome to the Quiz Game!")
     print("---------------------------")
 
@@ -154,19 +157,26 @@ def run_quiz():
           # Validate the answer input        
     print("\n🎉 Quiz Finished!")
     print("---------------------------")
-    high_score = get_high_score()
+    high_score = get_high_score(difficulty)
     print(f"\nYour Score: {score}/ {len(questions)}")
 
     # Save new high score if beaten
     if score > high_score:
-        save_high_score(score)
+        save_high_score(score, difficulty)
         print("🎉 New high score!")
     else:
-        print(f"High Score: {high_score}")
+        print(f"{difficulty.capitalize()} high Score: {high_score}")
 
     end_time = time.time() #end timer
     elapsed_time = round(end_time - start_time, 1) #calculate elapsed time
     print(f"You finished the quiz in {elapsed_time} seconds.")
+
+def show_high_scores():
+    print("\n🏆 High Scores:")
+    print("---------------------------")
+    for difficulty in ["easy", "medium", "hard"]:
+        score = get_high_score(difficulty)
+        print(f"{difficulty.capitalize()}: {score}")
 
 def main_menu():
     while True:
@@ -179,7 +189,7 @@ def main_menu():
         if choice == "1":
             run_quiz()
         elif choice == "2":
-            print(f"Current High Score: {get_high_score()}")
+            show_high_scores()
         elif choice == "3":
             print("Thanks for playing! Goodbye! 👋")
             break
